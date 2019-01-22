@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -55,25 +54,4 @@ func TestScraperHandler(t *testing.T) {
 }
 
 func TestScraperHandlerParseQuery(t *testing.T) {
-	method := "GET"
-	endpoint := "/"
-	query := url.Values{"foo": []string{"bar"}}.Encode()
-	url := fmt.Sprintf("%s?%s", endpoint, query)
-	req, err := http.NewRequest(method, url, nil)
-	if err != nil {
-		t.Fatalf("http.NewRequest(%q, %q, nil) failed: %s", method, url, err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ScraperHandler)
-
-	handler.ServeHTTP(rr, req)
-	if got := rr.Code; got != http.StatusOK {
-		t.Errorf("ScraperHandler returned unexpected status code: want %q, got %q", http.StatusOK, got)
-	}
-
-	want := fmt.Sprintln("key: foo, value: bar")
-	if rr.Body.String() != want {
-		t.Errorf("ScraperHandler returned unexpected body: want %q, got %q", want, rr.Body.String())
-	}
 }

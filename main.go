@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
-	_ "github.com/KentaKudo/go-scraper/scraper"
+	"github.com/KentaKudo/go-scraper/scraper"
 )
 
 func main() {
 	http.HandleFunc("/healthz", HealthCheckHandler)
+	http.HandleFunc("/", ScraperHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -27,11 +27,26 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ScraperHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%q", r.RequestURI)
 	queries := r.URL.Query()
+	type result struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	}
+	var re result
 	for key, values := range queries {
-		for _, v := range values {
-			fmt.Fprintf(w, "key: %s, value: %s\n", key, v)
+		if key == "url" {
+			for _, v := range values {
+				t, d, err := scraper.NewScraper(v).Scrape()
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				re = result{Title: t, Description: d}
+				break
+			}
 		}
 	}
+
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(re)
 }
