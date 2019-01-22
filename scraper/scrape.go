@@ -30,7 +30,5 @@ func (s *Scraper) Scrape() (string, string, error) {
 		return "", "", fmt.Errorf("html.Parse(resp.Body) returned an error: %s", err)
 	}
 
-	title := findTitle(doc)
-
-	return title, "test description", nil
+	return findTitle(doc), findDescription(doc), nil
 }
