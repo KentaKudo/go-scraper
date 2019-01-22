@@ -28,11 +28,12 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 func ScraperHandler(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()
-	type result struct {
+	type page struct {
+		URL         string `json:"url"`
 		Title       string `json:"title"`
 		Description string `json:"description"`
 	}
-	var re result
+	ps := []page{}
 	for key, values := range queries {
 		if key == "url" {
 			for _, v := range values {
@@ -41,12 +42,14 @@ func ScraperHandler(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				re = result{Title: t, Description: d}
-				break
+				ps = append(ps, page{URL: v, Title: t, Description: d})
 			}
 		}
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(re)
+	if err := json.NewEncoder(w).Encode(ps); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
