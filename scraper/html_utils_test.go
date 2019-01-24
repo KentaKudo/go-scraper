@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -160,6 +161,42 @@ func TestIsDescription(t *testing.T) {
 	for _, c := range cases {
 		if got := isDescription(c.input); got != c.want {
 			t.Errorf("isDescription(%v): got %t, want %t", c.input, got, c.want)
+		}
+	}
+}
+
+func TestFindOpenGraphAttr(t *testing.T) {
+	cases := []struct {
+		input string
+		want  map[string][]string
+	}{
+		{input: "", want: map[string][]string{}},
+		{input: `<html><head></head><body></body></html>`, want: map[string][]string{}},
+		{input: `<html><head><title>test</title></head><body></body></html>`, want: map[string][]string{}},
+		{input: `<html><head><meta property="og:type" content="test"></head><body></body></html>`, want: map[string][]string{"og:type": []string{"test"}}},
+		{input: `<html><head><meta property="unknown" content="test"></head><body></body></html>`, want: map[string][]string{}},
+		{
+			input: `<html><head>
+				<meta property="og:type1" content="test"><meta property="og:type2" content="test">
+				</head><body></body></html>`,
+			want: map[string][]string{"og:type1": []string{"test"}, "og:type2": []string{"test"}},
+		},
+		{
+			input: `<html><head>
+				<meta property="og:type" content="test1"><meta property="og:type" content="test2">
+				</head><body></body></html>`,
+			want: map[string][]string{"og:type": []string{"test1", "test2"}},
+		},
+	}
+	for _, c := range cases {
+		r := bytes.NewReader([]byte(c.input))
+		doc, err := html.Parse(r)
+		if err != nil {
+			t.Errorf("html.Parse(%q) returned an unexpected error: %s", c.input, err)
+		}
+
+		if got := findOpenGraphAttr(doc); !reflect.DeepEqual(got, c.want) {
+			t.Errorf("findOpenGraphAttr(%q): got %q, want %q", c.input, got, c.want)
 		}
 	}
 }

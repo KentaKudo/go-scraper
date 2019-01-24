@@ -12,6 +12,14 @@ type Scraper struct {
 	URL    string
 }
 
+type OpenGraphAttr = map[string][]string
+
+type Page struct {
+	Title         string
+	Description   string
+	OpenGraphAttr OpenGraphAttr
+}
+
 func NewScraper(url string) *Scraper {
 	return &Scraper{
 		Client: http.DefaultClient,
@@ -19,16 +27,32 @@ func NewScraper(url string) *Scraper {
 	}
 }
 
-func (s *Scraper) Scrape() (string, string, error) {
+func (s *Scraper) Scrape() (*Page, error) {
 	resp, err := s.Client.Get(s.URL)
 	if err != nil {
-		return "", "", fmt.Errorf("Scraper.Client.Get(%q) returned an error: %s", s.URL, err)
+		return nil, fmt.Errorf("Scraper.Client.Get(%q) returned an error: %s", s.URL, err)
 	}
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		return "", "", fmt.Errorf("html.Parse(resp.Body) returned an error: %s", err)
+		return nil, fmt.Errorf("html.Parse(resp.Body) returned an error: %s", err)
 	}
 
-	return findTitle(doc), findDescription(doc), nil
+	p := &Page{
+		Title:         findTitle(doc),
+		Description:   findDescription(doc),
+		OpenGraphAttr: findOpenGraphAttr(doc),
+	}
+
+	return p, nil
+}
+
+func appendToOpenGraphAttr(oga OpenGraphAttr, property, content string) OpenGraphAttr {
+	if v, ok := oga[property]; ok {
+		oga[property] = append(v, content)
+	} else {
+		oga[property] = []string{content}
+	}
+
+	return oga
 }

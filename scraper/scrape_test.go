@@ -58,15 +58,15 @@ func TestScrape(t *testing.T) {
 			URL:    srv.URL,
 		}
 
-		title, desc, err := sut.Scrape()
+		p, err := sut.Scrape()
 		if err != nil {
 			t.Errorf("Scrape() returned unexpected error: %s", err)
 		}
-		if title != c.title {
-			t.Errorf("Unexpected title returned: want %q, got %q", c.title, title)
+		if p.Title != c.title {
+			t.Errorf("Unexpected title returned: want %q, got %q", c.title, p.Title)
 		}
-		if desc != c.desc {
-			t.Errorf("Unexpected description returned: want %q, got %q", c.desc, desc)
+		if p.Description != c.desc {
+			t.Errorf("Unexpected description returned: want %q, got %q", c.desc, p.Description)
 		}
 
 		srv.Close()

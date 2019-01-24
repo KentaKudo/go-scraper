@@ -8,6 +8,13 @@ import (
 	"github.com/KentaKudo/go-scraper/scraper"
 )
 
+// TODO
+// - Package Layout
+// - Open Graph Protocol
+// - Timeout
+// - Concurrency
+// - httptest
+
 func main() {
 	http.HandleFunc("/healthz", HealthCheckHandler)
 	http.HandleFunc("/", ScraperHandler)
@@ -29,20 +36,26 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 func ScraperHandler(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()
 	type page struct {
-		URL         string `json:"url"`
-		Title       string `json:"title"`
-		Description string `json:"description"`
+		URL                 string              `json:"url"`
+		Title               string              `json:"title"`
+		Description         string              `json:"description"`
+		OpenGraphAttributes map[string][]string `json:"oepn_graph_attributes"`
 	}
 	ps := []page{}
 	for key, values := range queries {
 		if key == "url" {
 			for _, v := range values {
-				t, d, err := scraper.NewScraper(v).Scrape()
+				p, err := scraper.NewScraper(v).Scrape()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				ps = append(ps, page{URL: v, Title: t, Description: d})
+				ps = append(ps, page{
+					URL:                 v,
+					Title:               p.Title,
+					Description:         p.Description,
+					OpenGraphAttributes: p.OpenGraphAttr,
+				})
 			}
 		}
 	}
