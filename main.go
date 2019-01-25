@@ -10,8 +10,6 @@ import (
 
 // TODO
 // - Package Layout
-// - Open Graph Protocol
-// - Timeout
 // - Concurrency
 // - httptest
 

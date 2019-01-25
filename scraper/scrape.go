@@ -3,6 +3,7 @@ package scraper
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -22,8 +23,10 @@ type Page struct {
 
 func NewScraper(url string) *Scraper {
 	return &Scraper{
-		Client: http.DefaultClient,
-		URL:    url,
+		Client: &http.Client{
+			Timeout: 5 * time.Second,
+		},
+		URL: url,
 	}
 }
 
