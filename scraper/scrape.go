@@ -3,7 +3,6 @@ package scraper
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"golang.org/x/net/html"
 )
@@ -19,15 +18,6 @@ type Page struct {
 	Title         string
 	Description   string
 	OpenGraphAttr OpenGraphAttr
-}
-
-func NewScraper(url string) *Scraper {
-	return &Scraper{
-		Client: &http.Client{
-			Timeout: 5 * time.Second,
-		},
-		URL: url,
-	}
 }
 
 func (s *Scraper) Scrape() (*Page, error) {

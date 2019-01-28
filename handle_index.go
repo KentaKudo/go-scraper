@@ -6,7 +6,7 @@ import (
 	"github.com/KentaKudo/go-scraper/scraper"
 )
 
-func (s *server) handleIndex() http.HandlerFunc {
+func (s *server) handleIndex(factory scraper.Factory) http.HandlerFunc {
 	type response struct {
 		URL                 string              `json:"url"`
 		Title               string              `json:"title"`
@@ -19,9 +19,9 @@ func (s *server) handleIndex() http.HandlerFunc {
 		for key, values := range qs {
 			if key == "url" {
 				for _, v := range values {
-					p, err := scraper.NewScraper(v).Scrape()
+					p, err := factory.NewScraper(v).Scrape()
 					if err != nil {
-						ng(w, r, err, http.StatusBadRequest)
+						Error(w, err, http.StatusBadRequest)
 						return
 					}
 					rs = append(rs, response{
@@ -34,6 +34,6 @@ func (s *server) handleIndex() http.HandlerFunc {
 			}
 		}
 
-		ok(w, r, rs, http.StatusOK)
+		OK(w, rs, http.StatusOK)
 	}
 }

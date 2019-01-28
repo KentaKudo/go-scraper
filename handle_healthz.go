@@ -16,6 +16,6 @@ func (s *server) handleHealthz() http.HandlerFunc {
 		}
 
 		res := response{Alive: true}
-		ok(w, r, res, http.StatusOK)
+		OK(w, res, http.StatusOK)
 	}
 }
